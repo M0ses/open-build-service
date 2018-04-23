@@ -160,9 +160,10 @@ sub manifest_exists {
   my $maniid = 'sha256:'.Digest::SHA::sha256_hex($manifest);
   $tag = $maniid unless defined $tag;
   my $replyheaders;
+  my $uri = tag2uri($tag);
   my $param = {
     'headers' => [ "Accept: $content_type" ],
-    'uri' => "$registryserver/v2/$repository/manifests/$tag",
+    'uri' => $uri,
     'authenticator' => $registry_authenticator,
     'replyheaders' => \$replyheaders,
     'timeout' => $registry_timeout,
@@ -175,6 +176,16 @@ sub manifest_exists {
     return 1 if $maniretid eq $maniid;
   }
   return 0;
+}
+
+sub tag2uri {
+  my ($tag) = @_;
+  my ($name, $t_tag) = split(/\:/, $tag);
+  $name =~ s{.*/}{};
+  $t_tag = 'latest' unless $t_tag;
+  my $uri = "$registryserver/v2/$repository/$name/manifests/$t_tag";
+  BSUtil::printlog("\nUsing uri: $uri");
+  return $uri;
 }
 
 sub manifest_upload {
@@ -192,11 +203,13 @@ sub manifest_upload {
       print "uploading ${fat}manifest $maniid... ";
     }
   }
-  $tag = $maniid unless defined $tag;
   my $replyheaders;
+  $tag = $maniid unless defined $tag;
+  my $uri = tag2uri($tag);
+  BSUtil::printlog(Dumper($manifest));
   my $param = {
     'headers' => [ "Content-Type: $content_type" ],
-    'uri' => "$registryserver/v2/$repository/manifests/$tag",
+    'uri' => $uri,
     'request' => 'PUT',
     'authenticator' => $registry_authenticator,
     'replyheaders' => \$replyheaders,
@@ -204,8 +217,6 @@ sub manifest_upload {
   };
   BSRPC::rpc($param, undef);
   my $id = $replyheaders->{'docker-content-digest'};
-  die("server did not return a content id\n") unless $id;
-  die("server created a different manifest id: $maniid $id\n") if $maniid ne $id;
   print "done.\n" unless $quiet;
   return $maniid;
 }
@@ -383,7 +394,7 @@ while (@ARGV) {
   }
 }
 
-die("usage: bs_regpush <registryserver> <repository> <tarfile>...\n") unless @ARGV >= 2;
+die("usage: bs_regpush <registryserver> <repository> <tarfile>...\n") unless @ARGV > 2;
 ($registryserver, $repository, @tarfiles) = @ARGV;
 
 $registry_authenticator = BSBearer::generate_authenticator($dest_creds, 'verbose' => 1);
@@ -444,7 +455,7 @@ for my $tarfile (@tarfiles) {
   my %tar = map {$_->{'name'} => $_} @$tar;
 
   my $manifest = read_tar_manifest(\*TAR, \%tar);
-  #print Dumper($manifest);
+  print Dumper($manifest);
 
   if ($use_image_tags) {
     my @imagetags = @{$manifest->{'RepoTags'} || []};
