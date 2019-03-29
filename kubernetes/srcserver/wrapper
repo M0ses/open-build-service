@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+/usr/lib/obs/server/bs_srcserver

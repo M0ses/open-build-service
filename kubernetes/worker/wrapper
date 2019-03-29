@@ -1,0 +1,69 @@
+#!/bin/bash
+
+if [ -z "$OBS_WORKER_ROOT" ];then
+  OBS_WORKER_ROOT=/obs_worker_root
+fi
+
+if [ -z "$OBS_WORKER_STATEDIR" ];then
+  OBS_WORKER_STATEDIR=/obs_worker_state
+fi
+
+if [ ! -d $OBS_WORKER_STATEDIR ];then
+  echo "Creating directory: $OBS_WORKER_STATEDIR"
+  mkdir -p $OBS_WORKER_STATEDIR
+fi
+
+[ -d $OBS_WORKER_ROOT ] || mkdir -p $OBS_WORKER_ROOT 
+
+if [ -z "$OBS_WORKER_DEVICE" ];then
+  OBS_WORKER_DEVICE=/obs_worker_device.img
+fi
+
+if [ -z "$OBS_WORKER_SWAP" ];then
+  OBS_WORKER_SWAP=/obs_worker_swap.img
+fi
+
+if [ -z "$OBS_WORKER_DEVICE_SIZE" ];then
+  OBS_WORKER_DEVICE_SIZE=4G
+fi
+
+if [ -z "$OBS_WORKER_SWAP_SIZE" ];then
+  OBS_WORKER_SWAP_SIZE=1G
+fi
+
+if [ -z "$OBS_WORKER_PORT" ];then
+  OBS_WORKER_PORT=8888
+fi
+
+if [ -z "$OBS_REPOSERVER" ];then
+  OBS_REPOSERVER=http://obs-repserver:5252
+fi
+
+if [ -z "$OBS_WORKER_ARCH" ];then
+  OBS_WORKER_ARCH=`uname -m`
+fi
+
+[ -f $OBS_WORKER_DEVICE ] || /usr/bin/qemu-img create -f raw $OBS_WORKER_DEVICE $OBS_WORKER_DEVICE_SIZE
+[ -f $OBS_WORKER_SWAP ]   || /usr/bin/qemu-img create -f raw $OBS_WORKER_SWAP $OBS_WORKER_SWAP_SIZE
+
+OBS_WORKER_DIR=`mktemp -d /tmp/XXXXXXXX`
+
+echo "Changing to worker dir $OBS_WORKER_DIR"
+cd $OBS_WORKER_DIR
+
+echo "Fetching worker code from $OBS_REPOSERVER/getworkercode"
+curl "$OBS_REPOSERVER/getworkercode" | cpio --quiet --extract
+
+echo "Changing mode to 755 for bs_worker"
+chmod 755 bs_worker
+
+echo "Starting the worker with the following options:"
+echo "  --root       $OBS_WORKER_ROOT"
+echo "  --statedir   $OBS_WORKER_STATEDIR"
+echo "  --device     $OBS_WORKER_DEVICE"
+echo "  --swap       $OBS_WORKER_SWAP"
+echo "  --port       $OBS_WORKER_PORT"
+echo "  --reposerver $OBS_REPOSERVER"
+echo "  --arch       $OBS_WORKER_ARCH"
+echo 
+./bs_worker --root $OBS_WORKER_ROOT --statedir $OBS_WORKER_STATEDIR --device $OBS_WORKER_DEVICE --swap $OBS_WORKER_SWAP --port $OBS_WORKER_PORT --reposerver $OBS_REPOSERVER --arch $OBS_WORKER_ARCH

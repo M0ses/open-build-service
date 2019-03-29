@@ -1,0 +1,25 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: caasp-mariadb
+  labels:
+    app: caasp-mariadb
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: caasp-mariadb
+        tier: mysql
+    spec:
+      containers:
+        - image: registry.suse.de/devel/casp/head/controllernode/sle_15/caasp/v4/mariadb:10.0.35
+          name: obs-mariadb
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: opensuse
+          ports:
+          - containerPort: 3306
+            name: mysql

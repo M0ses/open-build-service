@@ -1,0 +1,54 @@
+#!/bin/bash
+
+export RAILS_ENV=production
+export BOOTSTRAP_TEST_MODE=1
+export NON_INTERACTIVE=1
+
+cd /srv/www/obs/api
+
+bin/rails db:migrate:status
+
+if [  $? -gt 0 ];then
+  bin/rails db:create || exit 127
+  bin/rails db:setup  || exit 128
+  #bin/rails writeconfiguration
+else
+  bin/rails db:migrate:with_data || exit 130
+fi
+
+source /usr/lib/obs/server/setup-appliance.sh
+
+mkdir -p /srv/obs/certs/
+
+# generate_proposed_dnsnames
+
+DNS_NAMES="obs-frontend-rails"
+FQHOSTNAME="obs-frontend-rails"
+backenddir=/srv/obs
+
+DETECTED_CERT_CHANGE=0
+PROPOSED_DNS_NAMES="obs-frontend-rails localhost"
+
+check_server_key
+
+check_server_cert
+
+import_ca_cert
+
+relink_server_cert
+
+a2enmod passenger
+
+MODULES="passenger rewrite proxy proxy_http xforward headers socache_shmcb"
+
+for mod in $MODULES;do
+  a2enmod -q $mod || a2enmod $mod
+done
+
+FLAGS=SSL
+
+for flag in $FLAGS;do
+  a2enflag $flag >/dev/null
+done
+
+/usr/sbin/start_apache2 -DFOREGROUND -k start

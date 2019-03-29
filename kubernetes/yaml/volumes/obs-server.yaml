@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: obs-mariadb-pv-claim
+  labels:
+    app: obs-mariadb
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: obs-mariadb
+  labels:
+    app: obs-mariadb
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: obs-mariadb
+        tier: mysql
+    spec:
+      containers:
+        - image: kube-registry.kube-system.svc.cluster.local:5000/obs-mariadb:latest
+          name: obs-mariadb
+          env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: opensuse
+          ports:
+          - containerPort: 3306
+            name: mysql
+          volumeMounts:
+          - name: obs-mariadb-persistent-storage
+            mountPath: /var/lib/mysql
+          securityContext:
+            privileged: true
+      volumes:
+      - name: obs-mariadb-persistent-storage
+        persistentVolumeClaim:
+          claimName: obs-mariadb-pv-claim

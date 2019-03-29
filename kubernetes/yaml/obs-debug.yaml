@@ -1,0 +1,21 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: obs-debug
+  labels:
+    app: obs-debug
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: obs-debug
+    spec:
+      containers:
+        - image: kube-registry.kube-system.svc.cluster.local:5000/obs-debug
+          name: obs-debug
+          tty: true
+          securityContext:
+            privileged: true
