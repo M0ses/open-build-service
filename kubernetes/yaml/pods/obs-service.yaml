@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: obs-service
+  labels:
+    app: obs-service
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: obs-service
+  template:
+    metadata:
+      labels:
+        app: obs-service
+    spec:
+      containers:
+      - name: obs-service
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-service:latest

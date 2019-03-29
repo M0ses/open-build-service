@@ -1,0 +1,58 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: obs-srcserver-pv-claim
+  labels:
+    app: obs-srcserver
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: obs-srcserver
+spec:
+  selector:
+    app: obs-srcserver
+  clusterIP: None
+  ports:
+  - name: obs-srcserver
+    port: 5352
+    targetPort: 5352
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: obs-srcserver
+  labels:
+    app: obs-srcserver
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: obs-srcserver
+  template:
+    metadata:
+      labels:
+        app: obs-srcserver
+    spec:
+      containers:
+      - name: obs-srcserver
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-srcserver:latest
+        ports:
+        - containerPort: 5352
+        volumeMounts:
+        - name: obs-srcserver-persistent-storage
+          mountPath: /srv/obs
+      volumes:
+      - name: obs-srcserver-persistent-storage
+        persistentVolumeClaim:
+          claimName: obs-srcserver-pv-claim

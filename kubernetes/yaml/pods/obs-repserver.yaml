@@ -1,0 +1,58 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: obs-repserver
+  labels:
+    app: obs-repserver
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: obs-repserver
+  template:
+    metadata:
+      labels:
+        app: obs-repserver
+    spec:
+      volumes:
+      - name: obs-repserver
+        emptyDir: {}
+      containers:
+      - name: obs-signer
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-signer:latest
+        volumeMounts:
+        - name: obs-repserver
+          mountPath: /srv/obs
+      - name: obs-repserver
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-repserver:latest
+        ports:
+        - containerPort: 5352
+        volumeMounts:
+        - name: obs-repserver
+          mountPath: /srv/obs
+      - name: obs-dispatch
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-dispatch:latest
+        volumeMounts:
+        - name: obs-repserver
+          mountPath: /srv/obs
+      - name: obs-scheduler
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-scheduler:latest
+        env:
+          - name: OBS_SCHEDULER_ARCH
+            value: x86_64
+        volumeMounts:
+        - name: obs-repserver
+          mountPath: /srv/obs
+      - name: obs-warden
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-warden:latest
+        volumeMounts:
+        - name: obs-repserver
+          mountPath: /srv/obs
+      - name: obs-publish
+        image: kube-registry.kube-system.svc.cluster.local:5000/obs-publish:latest
+        volumeMounts:
+        - name: obs-repserver
+          mountPath: /srv/obs

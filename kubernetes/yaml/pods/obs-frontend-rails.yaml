@@ -1,0 +1,25 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: obs-frontend-rails
+  labels:
+    app: obs-frontend-rails
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: obs-frontend-rails
+    spec:
+      containers:
+        - image: kube-registry.kube-system.svc.cluster.local:5000/obs-frontend-rails:latest
+          name: obs-frontend-rails
+          #env:
+          #- name: MYSQL_ROOT_PASSWORD
+          #  value: opensuse
+          ports:
+          - containerPort: 443
+            name: https
+          stdin: true
+          tty: true

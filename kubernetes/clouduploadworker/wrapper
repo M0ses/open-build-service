@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+/usr/lib/obs/worker/bs_clouduploadserver

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+REGISTRY="kube-registry.kube-system.svc.cluster.local:5000"
+
+REGISTRY_UNREACHABLE=1
+TIMEOUT=3600
+
+while [ $REGISTRY_UNREACHABLE -gt 0 ];do
+	curl $REGISTRY
+	REGISTRY_UNREACHABLE=$?
+	TIMEOUT=$(($TIMEOUT-1))
+	[ $TIMEOUT -le 0 ] && exit 127
+	sleep 1
+done
+
+if [ -z "$1" ];then
+  CONTAINERS="mariadb repserver srcserver worker frontend-rails debug memcached scheduler service dispatch publish warden signer"
+else
+  CONTAINERS="$@"
+fi
+
+for i in $CONTAINERS
+do
+  TAG=$REGISTRY/obs-$i:latest
+  echo "####### $TAG #####"
+  docker build -f $i/Dockerfile -t $TAG . || exit 1
+  docker push $TAG || exit 1
+done
+
+exit 0

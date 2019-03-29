@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export BOOTSTRAP_TEST_MODE=1
+
+. /usr/lib/obs/server/setup-appliance.sh
+
+prepare_obssigner
+
+/usr/lib/obs/server/bs_signer

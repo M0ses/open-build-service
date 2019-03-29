@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: obs-repserver
+spec:
+  selector:
+    app: obs-repserver
+  clusterIP: None
+  ports:
+  - name: obs-repserver
+    port: 5252
+    targetPort: 5252

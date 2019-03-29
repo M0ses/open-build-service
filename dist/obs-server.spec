@@ -755,6 +755,7 @@ usermod -a -G docker obsservicerun
 %{_unitdir}/obsworker.service
 /usr/sbin/obsworker
 /usr/sbin/rcobsworker
+/usr/lib/obs/server/containerworker
 
 %files -n obs-api
 %defattr(-,root,root)
