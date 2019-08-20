@@ -7,19 +7,19 @@ use FindBin;
 use File::Path qw(make_path remove_tree);
 
 my $TMP_DIR="$FindBin::Bin/tmp/";
+
 if ( -f "$TMP_DIR/.SKIP" ) {
   plan skip_all => "Previous tests failed - keeping results";
 } else {
   plan tests => 2;
 
-  chdir("$TMP_DIR/home:Admin");
 
-  system("osc delete obs-testpackage");
+  system("osc rdelete -rf -m 'Cleanup home:Admin' home:Admin");
 
-  ok(!$?,"Deleting package obs-testpackage");
+  ok(!$?,"Deleting project home:Admin");
 
-  system("osc ci -m \"removed package obs-testpackage\"");
- ok(!$?,"Commiting deleted package obs-testpackage");
+  system("osc rdelete -rf -m 'Cleanup Interconnect' openSUSE.org");
+  ok(!$?,"Deleting Interconnect");
 
   # cleanup TMP_DIR
   chdir($FindBin::Bin);
