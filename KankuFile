@@ -1,0 +1,190 @@
+domain_name: obs-server
+default_job: osu
+
+jobs:
+ osu:
+  -
+    use_module: Kanku::Handler::SetJobContext
+    options:
+      login_user: root
+      login_pass: opensuse
+      use_cache: 1
+  -
+    use_module: Kanku::Handler::OBSCheck
+    options:
+      api_url: https://api.opensuse.org/public/
+      project: OBS:Server:Unstable
+      package: OBS-Appliance:qcow2
+      preferred_extension: qcow2
+  -
+    use_module: Kanku::Handler::ImageDownload
+    options:
+      use_cache: 1
+  -
+    use_module: Kanku::Handler::ResizeImage
+    options:
+      disk_size: 11G
+  -
+    use_module: Kanku::Handler::CreateDomain
+    options:
+      memory: 4194304
+      vcpu: 2
+      use_9p: 1
+      management_interface: eth0
+  -
+    use_module: Kanku::Handler::PrepareSSH
+  -
+    use_module: Kanku::Handler::WaitForSystemd
+  -
+    use_module: Kanku::Handler::ExecuteCommandViaSSH
+    options:
+      commands:
+        - perl -p -i -e 's/OBS_USE_SLP="yes"/OBS_USE_SLP="no"/' /etc/sysconfig/obs-server
+        - perl -p -i -e "s/^\s*OBS_WORKER_INSTANCES=.*/OBS_WORKER_INSTANCES=1/" /etc/sysconfig/obs-server
+        - for i in worker apidelayed dispatcher deltastore repserver service servicedispatch srcserver signer signd;do systemctl restart obs$i ;done
+        - systemctl stop slpd
+        - systemctl disable slpd
+        - zypper -n --no-gpg-check ref -s
+        - zypper -n in perl-Devel-Cover
+        - echo -en "[client]\nuser = root\npassword = opensuse\n" > /root/.my.cnf
+  -
+    use_module: Kanku::Handler::Reboot
+  -
+    use_module: Kanku::Handler::WaitForSystemd
+  -
+    use_module: Kanku::Handler::ExecuteCommandViaSSH
+    options:
+      username: root
+      commands:
+        - make -C  /tmp/kanku/dist test_system
+        - make -C /tmp/kanku/src/backend test_unit
+        - make -C /tmp/kanku/dist/t/osc test_system
+ fedora:
+  -
+    use_module: Kanku::Handler::SetJobContext
+    options:
+      login_user: root
+      login_pass: kankudai
+      use_cache: 1
+  -
+    use_module: Kanku::Handler::OBSCheck
+    options:
+      api_url: https://api.opensuse.org/public/
+      project: devel:kanku:images
+      package: Fedora-30-JeOS:Disk
+      repository: images_fedora_30
+      preferred_extension: raw.xz
+  -
+    use_module: Kanku::Handler::ImageDownload
+    options:
+      use_cache: 1
+  -
+    use_module: Kanku::Handler::CreateDomain
+    options:
+      memory: 4G
+      vcpu: 2
+      use_9p: 1
+      management_interface: lan0
+  -
+    use_module: Kanku::Handler::PrepareSSH
+  -
+    use_module: Kanku::Handler::WaitForSystemd
+  -
+    use_module: Kanku::Handler::ExecuteCommandViaSSH
+    options:
+      commands:
+        - echo "alias vi=vim" > .bashrc
+        - dnf -y install perl rubygem-bundler zlib-devel ruby-devel rsync bsdtar less git patch mysql-devel openldap-devel libxml2-devel rubygem-execjs nodejs
+        - rsync -av /tmp/kanku/ /root/open-build-service
+        - cd /root/open-build-service && perl -p -i -e 's{#!/usr/bin/ruby.ruby2.5}{#!/usr/bin/ruby}' $(grep '#!/usr/bin/ruby' -rl .)
+        - cd /root/open-build-service/src/api && bundle --local --path `rpm --eval %_libdir`/obs-api || /bin/true
+        - cd /root/open-build-service/src/api && bundle
+        - DIST_FEDORA=1 make -C /root/open-build-service/
+        - DIST_FEDORA=1 make -C /root/open-build-service/ install
+        - cp /var/adm/fillup-templates/sysconfig.obs-server /etc/sysconfig/obs-server
+        - perl -p -i -e 's/^OBS_API_AUTOSETUP=.*/OBS_API_AUTOSETUP="yes"/' /etc/sysconfig/obs-server
+        - perl -p -i -e 's/^OBS_STORAGE_AUTOSETUP=.*/OBS_STORAGE_AUTOSETUP="yes"/' /etc/sysconfig/obs-server
+        - perl -p -i -e 's/OBS_USE_SLP="yes"/OBS_USE_SLP="no"/' /etc/sysconfig/obs-server
+        - perl -p -i -e "s/^\s*OBS_WORKER_INSTANCES=.*/OBS_WORKER_INSTANCES=1/" /etc/sysconfig/obs-server
+        - systemctl start obsstoragesetup
+        - systemctl start obsapisetup
+        - for i in srcserver repserver worker apidelayed dispatcher deltastore service servicedispatch signer signd;do systemctl restart obs$i ;done
+        - systemctl stop slpd
+        - systemctl disable slpd
+        - zypper -n --no-gpg-check ref -s
+        - zypper -n in perl-Devel-Cover
+        - echo -en "[client]\nuser = root\npassword = opensuse\n" > /root/.my.cnf
+  -
+    use_module: Kanku::Handler::Reboot
+  -
+    use_module: Kanku::Handler::WaitForSystemd
+  -
+    use_module: Kanku::Handler::ExecuteCommandViaSSH
+    options:
+      username: root
+      commands:
+        - make -C  /tmp/kanku/dist test_system
+        - make -C /tmp/kanku/src/backend test_unit
+        - make -C /tmp/kanku/dist/t/osc test_system
+ tumbleweed:
+  -
+    use_module: Kanku::Handler::SetJobContext
+    options:
+      login_user: root
+      login_pass: kankudai
+      use_cache: 1
+  -
+    use_module: Kanku::Handler::OBSCheck
+    options:
+      api_url: https://api.opensuse.org/public/
+      project: devel:kanku:images
+      package: openSUSE-Tumbleweed-JeOS:ext4
+      repository: images_tumbleweed
+      preferred_extension: qcow2
+  -
+    use_module: Kanku::Handler::ImageDownload
+    options:
+      use_cache: 1
+  -
+    use_module: Kanku::Handler::CreateDomain
+    options:
+      memory: 4G
+      vcpu: 2
+      use_9p: 1
+      management_interface: eth0
+  -
+    use_module: Kanku::Handler::PrepareSSH
+  -
+    use_module: Kanku::Handler::WaitForSystemd
+  -
+    use_module: Kanku::Handler::ExecuteCommandViaSSH
+    options:
+      commands:
+        - zypper -n install perl ruby2.6-rubygem-bundler zlib-devel ruby-devel ruby2.6-devel rsync bsdtar less git patch openldap2-devel libxml2-devel libmysqld-devel gcc make gcc-c++ libxslt-devel cyrus-sasl-devel
+        - rsync -av /tmp/kanku/ /root/open-build-service
+        - cd /root/open-build-service/src/api && bundle update --bundler
+        - cd /root/open-build-service/src/api && bundle
+        - cd /root/open-build-service/src/api && rm -rf src/{api,backend}/docker-files && rm -rf src/api/Dockerfile.frontend-base && rm -rf src/backend/build && find -name .keep -o -name .gitignore | xargs rm -rf
+        - cd /root/open-build-service && perl -p -i -e 's{#!/usr/bin/ruby.ruby2.5}{#!/usr/bin/ruby}' $(grep '#!/usr/bin/ruby' -rl .)
+        - make -C /root/open-build-service/
+        - make -C /root/open-build-service/ install
+        - perl -p -i -e 's/OBS_USE_SLP="yes"/OBS_USE_SLP="no"/' /etc/sysconfig/obs-server
+        - perl -p -i -e "s/^\s*OBS_WORKER_INSTANCES=.*/OBS_WORKER_INSTANCES=1/" /etc/sysconfig/obs-server
+        - for i in worker apidelayed dispatcher deltastore repserver service servicedispatch srcserver signer signd;do systemctl restart obs$i ;done
+        - systemctl stop slpd
+        - systemctl disable slpd
+        - zypper -n --no-gpg-check ref -s
+        - zypper -n in perl-Devel-Cover
+        - echo -en "[client]\nuser = root\npassword = opensuse\n" > /root/.my.cnf
+  -
+    use_module: Kanku::Handler::Reboot
+  -
+    use_module: Kanku::Handler::WaitForSystemd
+  -
+    use_module: Kanku::Handler::ExecuteCommandViaSSH
+    options:
+      username: root
+      commands:
+        - make -C  /tmp/kanku/dist test_system
+        - make -C /tmp/kanku/src/backend test_unit
+        - make -C /tmp/kanku/dist/t/osc test_system
