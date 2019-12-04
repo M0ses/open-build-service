@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
       - name: obs-srcserver
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-srcserver:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-srcserver:0.0.1
         ports:
         - containerPort: 5352
         volumeMounts:

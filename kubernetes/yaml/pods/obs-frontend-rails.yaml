@@ -13,7 +13,7 @@ spec:
         app: obs-frontend-rails
     spec:
       containers:
-        - image: kube-registry.kube-system.svc.cluster.local:5000/obs-frontend-rails:latest
+        - image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-frontend-rails:0.0.1
           name: obs-frontend-rails
           #env:
           #- name: MYSQL_ROOT_PASSWORD

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: obs-worker
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-worker:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-worker:0.0.1
         ports:
         - containerPort: 8888
         command: ["/usr/lib/obs/server/containerworker"]

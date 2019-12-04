@@ -29,7 +29,7 @@ spec:
         tier: mysql
     spec:
       containers:
-        - image: kube-registry.kube-system.svc.cluster.local:5000/obs-mariadb:latest
+        - image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-mariadb:0.0.1
           name: obs-mariadb
           env:
           - name: MYSQL_ROOT_PASSWORD

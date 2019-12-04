@@ -22,24 +22,24 @@ spec:
         emptyDir: {}
       containers:
       - name: obs-signer
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-signer:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-signer:0.0.1
         volumeMounts:
         - name: obs-repserver
           mountPath: /srv/obs
       - name: obs-repserver
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-repserver:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-repserver:0.0.1
         ports:
         - containerPort: 5352
         volumeMounts:
         - name: obs-repserver
           mountPath: /srv/obs
       - name: obs-dispatch
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-dispatch:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-dispatch:0.0.1
         volumeMounts:
         - name: obs-repserver
           mountPath: /srv/obs
       - name: obs-scheduler
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-scheduler:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-scheduler:0.0.1
         env:
           - name: OBS_SCHEDULER_ARCH
             value: x86_64
@@ -47,12 +47,12 @@ spec:
         - name: obs-repserver
           mountPath: /srv/obs
       - name: obs-warden
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-warden:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-warden:0.0.1
         volumeMounts:
         - name: obs-repserver
           mountPath: /srv/obs
       - name: obs-publish
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-publish:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-publish:0.0.1
         volumeMounts:
         - name: obs-repserver
           mountPath: /srv/obs

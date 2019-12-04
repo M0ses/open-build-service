@@ -14,7 +14,7 @@ spec:
         app: obs-memcached
     spec:
       containers:
-        - image: kube-registry.kube-system.svc.cluster.local:5000/obs-memcached:latest
+        - image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-memcached:0.0.1
           name: obs-memcached
           ports:
           - containerPort: 11211

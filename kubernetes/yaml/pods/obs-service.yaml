@@ -19,4 +19,4 @@ spec:
     spec:
       containers:
       - name: obs-service
-        image: kube-registry.kube-system.svc.cluster.local:5000/obs-service:latest
+        image: registry.opensuse.org/home/m0ses/obs/server/containers/containers/obs-service:0.0.1
