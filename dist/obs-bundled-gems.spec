@@ -54,6 +54,7 @@ BuildRequires:  openldap2-devel
 BuildRequires:  ruby-devel
 BuildRequires:  rubygem-bundler
 BuildRequires:  openldap-devel
+BuildRequires:  rubypick
 %endif
 BuildRequires:  chrpath
 
