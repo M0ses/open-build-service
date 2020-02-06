@@ -169,6 +169,8 @@ find %{buildroot} -type f -print0 | xargs -0 grep -l /usr/bin/env | while read f
   chmod a-x $file
 done
 
+%install
+# just a dummy to test for debuginfo
 
 %files
 %_libdir/obs-api
