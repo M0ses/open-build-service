@@ -128,6 +128,8 @@ bundle config build.ffi --enable-system-libffi
 bundle config build.nokogiri --use-system-libraries
 bundle config build.sassc --disable-march-tune-native
 
+%install
+
 bundle --local --path %{buildroot}%_libdir/obs-api/
 
 # test that the rake and rack macros is still matching our Gemfile
@@ -168,9 +170,6 @@ done
 find %{buildroot} -type f -print0 | xargs -0 grep -l /usr/bin/env | while read file; do
   chmod a-x $file
 done
-
-%install
-# this section is needed for creating debug packages
 
 %files
 %_libdir/obs-api
