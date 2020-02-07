@@ -15,6 +15,9 @@
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
 
+%if 0%{?fedora}
+%global _build_insert_debug_package %{nil}
+%endif
 
 Name:           obs-bundled-gems
 Version:        2.10~pre
@@ -170,6 +173,10 @@ done
 find %{buildroot} -type f -print0 | xargs -0 grep -l /usr/bin/env | while read file; do
   chmod a-x $file
 done
+
+%if 0%{?fedora}
+grep -l "%{buildroot}" -r %{buildroot}/usr/lib64/obs-api/ruby/2.6.0/|xargs sed -i -e 's,%{buildroot},,'
+%endif
 
 %files
 %_libdir/obs-api
