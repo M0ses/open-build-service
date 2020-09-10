@@ -27,7 +27,7 @@ while [ -n "$1" ];do
   esac
 done
 
-if [ "$SUSE" == "opensuse" ]; then
+if [ "$SUSE" == "opensuse" -o "$SUSE" == "opensuse-leap" ]; then
   SUSE=openSUSE
   downloadserver="http://download.opensuse.org"
   echo "Adding repository for docker containers"
@@ -37,7 +37,7 @@ if [ "$SUSE" == "opensuse" ]; then
   echo "Adding main obs repository"
   zypper ar --refresh -n --no-gpg-checks $downloadserver/repositories/OBS:/Server:/Unstable/$SUSE\_$VERSION/OBS:Server:Unstable.repo
 
-  docker_install="obs-source-service-docker-image"
+  docker_install="obs-source-service-image"
 elif [ "$SUSE" == "SLE" -o "$SUSE" == "sles" ]; then
   SUSE=SLE_
   VERSION=${VERSION/-/_}
