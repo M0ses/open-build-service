@@ -4,7 +4,6 @@ require 'rexml/document'
 
 # rubocop: disable Metrics/ClassLength
 class Package < ApplicationRecord
-  include AppendSphinxCallbacks
   include FlagHelper
   include Flag::Validations
   include CanRenderModel
@@ -70,6 +69,8 @@ class Package < ApplicationRecord
   before_destroy :remove_devel_packages
 
   after_save :write_to_backend
+  after_save :populate_to_sphinx
+
   after_rollback :reset_cache
 
   # The default scope is necessary to exclude the forbidden projects.
@@ -500,7 +501,7 @@ class Package < ApplicationRecord
     begin
       answer = Backend::Connection.post(source_path(nil, query))
     rescue Backend::Error => e
-      Rails.logger.debug "failed to parse issues: #{e.inspect}"
+      Rails.logger.debug { "failed to parse issues: #{e.inspect}" }
       return {}
     end
     xml = Xmlhash.parse(answer.body)
@@ -1096,7 +1097,7 @@ class Package < ApplicationRecord
     if li
       bp.error = li['error']
 
-      Rails.logger.debug "Syncing link #{project.name}/#{name} -> #{li['project']}/#{li['package']}"
+      Rails.logger.debug { "Syncing link #{project.name}/#{name} -> #{li['project']}/#{li['package']}" }
       # we have to be careful - the link target can be nowhere
       bp.links_to = Package.find_by_project_and_name(li['project'], li['package'])
     else
@@ -1407,6 +1408,14 @@ class Package < ApplicationRecord
 
   def fetch_rev_from_history_cache(rev)
     Rails.cache.read(['history', self, rev]) || Rails.cache.read(['history_md5', self, rev])
+  end
+
+  def populate_to_sphinx
+    if new_record? ||
+       title_previously_changed? ||
+       description_previously_changed?
+      PopulateToSphinxJob.perform_later(id: id, model_name: :package)
+    end
   end
 end
 # rubocop: enable Metrics/ClassLength
