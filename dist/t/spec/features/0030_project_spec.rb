@@ -26,14 +26,15 @@ RSpec.describe 'Project', type: :feature do
     Timeout.timeout(120) do
       loop do
         break unless have_content('There are no distributions configured. Maybe you want to connect to one of the public OBS instances?')
+        break if have_content('Add Repositories to home:Admin')
 
         # If we found our record we sleep for 0.25 seconds and try again.
         sleep 10
-        reload_page
+        refresh
       end
     end
-    check('openSUSE Leap 15.5')
+    check('openSUSE Leap 15.6')
     visit current_path
-    expect(page).to have_checked_field('openSUSE Leap 15.5')
+    expect(page).to have_checked_field('openSUSE Leap 15.6')
   end
 end
