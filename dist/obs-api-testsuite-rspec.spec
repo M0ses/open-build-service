@@ -52,7 +52,8 @@ popd
 
 pushd src/api
 # configure to the bundled gems
-bundle --local --path %_libdir/obs-api/
+bundle config set path %(rpm -E %%_libdir)/obs-api
+bundle install --local
 
 ./script/prepare_spec_tests.sh
 

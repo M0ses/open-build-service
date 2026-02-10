@@ -476,6 +476,8 @@ OBS_RUBY_ABI_VERSION=%{__obs_ruby_abi_version}
 EOF
 
 pushd src/api
+# we use the build host RPM to evaluate %%_libdir while parsing the spec
+# the build host is never noarch, so this ensures we get a proper architecture-specific path
 bundle config set path %(rpm -E %%_libdir)/obs-api
 
 bundle install --local
