@@ -44,6 +44,10 @@ of packaging the application
 %setup -q -n open-build-service-%{version}
 
 %build
+# required in openSUSE >= 16.0
+export MARIADB_SSL_MODE=DISABLED
+export MARIADB_TLS_DISABLE_PEER_VERIFICATION=1
+
 # run in build environment
 pushd src/backend/
 rm -rf build
