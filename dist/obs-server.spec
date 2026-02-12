@@ -500,7 +500,7 @@ DESTDIR=%{buildroot} make install
 
 # install .bundle/config generated in %%build
 mkdir -p %{buildroot}%{__obs_api_prefix}/.bundle
-install -m 0640 src/api/.bundle/config %{buildroot}%{__obs_api_prefix}/.bundle/config
+install -m 0644 src/api/.bundle/config %{buildroot}%{__obs_api_prefix}/.bundle/config
 
 %if 0%{?suse_version}
 systemd_services="$(basename --multiple --suffix .service %{buildroot}%{_unitdir}/*.service) $(basename --multiple --suffix .target %{buildroot}%{_unitdir}/*.target)"
