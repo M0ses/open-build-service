@@ -1,23 +1,24 @@
 require 'capybara'
-require 'capybara/apparition'
 require 'capybara/dsl'
+require 'capybara/cuprite'
 require 'socket'
-
-Capybara.register_driver :selenium_chrome_headless do |app|
+Capybara.register_driver :cuprite do |app|
   options = {
     window_size:         [1280, 1024],
     js_errors:           false,
     headless:            true,
-    ignore_https_errors: true,
-    w3c:                 false,
-    browser_options:     { 'disable-gpu': true, 'no-sandbox': true }
+    browser_options: {
+      'disable-gpu' => nil,
+      'no-sandbox' => nil,
+      'ignore-certificate-errors' => nil
+    }
   }
-  Capybara::Apparition::Driver.new(app, options)
+  Capybara::Cuprite::Driver.new(app, **options)
 end
 
-Capybara.default_driver = :selenium_chrome_headless
+Capybara.default_driver = :cuprite
 Capybara.default_max_wait_time = 6
-Capybara.javascript_driver = :selenium_chrome_headless
+Capybara.javascript_driver = :cuprite
 Capybara.save_path = ENV.fetch('RSPEC_RESULT_DIR', '/tmp/rspec_screens')
 
 # Attempt to click the associated label element if a checkbox/radio button are non-visible (This is especially useful for Bootstrap custom controls)
@@ -40,3 +41,4 @@ RSpec.configure do |config|
     page.driver.add_headers('User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0')
   end
 end
+
