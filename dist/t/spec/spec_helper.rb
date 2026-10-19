@@ -1,9 +1,29 @@
 # OBS Appliance spec helper.
-#
+# dist/t/spec/spec_helper.rb
+# Absolute top of the file - Line 1
+
+# Force Ruby to find vendored gems inside the Kanku sandbox directory layout
+Dir[File.expand_path('../vendor/bundle/ruby/*/gems/*/lib', __dir__)].each do |path|
+  $LOAD_PATH.unshift(path) unless $LOAD_PATH.include?(path)
+end
+
+ENV['RAILS_ENV'] ||= 'test'
+
+# Require supporting ruby files with custom matchers and macros, etc,
+# in spec/support/ and its subdirectories.
+Dir[File.expand_path('support/**/*.rb', __dir__)].sort.each { |f| require f }
+
+# Now require it directly bypassing bundler's strict isolation
+require 'cuprite'
+
+ENV['RAILS_ENV'] ||= 'test'
+
 # for capybara rspec support
 require 'support/capybara'
+require 'bundler/setup'
 
 SCREENSHOT_DIR = ENV.fetch('RSPEC_RESULT_DIR', '/tmp/rspec_screens').freeze
+
 
 RSpec.configure do |config|
   config.before(:suite) do
